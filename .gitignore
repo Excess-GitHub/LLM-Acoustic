@@ -1,2 +1,3 @@
-!ad_detection/output/comparison_results.json
+/ad_detection/output/llm_*
+/ad_detection/output/small_gpu
 /Pitt Corpus/Pitt Corpus/*
