@@ -1,0 +1,54 @@
+============================================================
+AUDIO FEATURE EXTRACTION QC REPORT
+============================================================
+
+SUMMARY
+----------------------------------------
+  total_samples: 548
+  features_count: 37
+  by_group: {'AD': 308, 'HC': 240}
+  missing_values: {'participant_id': 0, 'session': 0, 'group': 0, 'age': 91, 'mmse': 91, 'gender': 3, 'duration_seconds': 0, 'pause_ratio': 0, 'speech_ratio': 0, 'pause_speech_ratio': 0, 'num_pauses_per_sec': 0, 'num_speech_segments_per_sec': 0, 'speech_dur_mean': 0, 'speech_dur_std': 0, 'speech_dur_skew': 0, 'speech_dur_kurt': 0, 'speech_dur_min': 0, 'speech_dur_max': 0, 'pause_dur_mean': 0, 'pause_dur_std': 0, 'pause_dur_skew': 0, 'pause_dur_kurt': 0, 'pause_dur_min': 0, 'pause_dur_max': 0, 'f0_mean': 0, 'f0_std': 0, 'f0_min': 0, 'f0_max': 0, 'f0_range': 0, 'intensity_mean': 0, 'intensity_std': 0, 'intensity_min': 0, 'intensity_max': 0, 'intensity_range': 0, 'voice_rate': 0, 'jitter_mean': 0, 'jitter_std': 0, 'shimmer_mean': 0, 'shimmer_std': 0, 'hnr_mean': 0, 'hnr_std': 0, 'hnr_min': 0, 'hnr_max': 0}
+  rows_with_missing: 95
+
+VALIDATION ISSUES
+----------------------------------------
+  Samples with issues: 104
+  - 003: 1 issues
+  - 010: 2 issues
+  - 014: 2 issues
+  - 016: 2 issues
+  - 016: 2 issues
+
+FEATURE STATISTICS (first 10)
+----------------------------------------
+  duration_seconds:
+    mean=70.0008, std=31.2327
+    range=[17.9952, 268.4773]
+  pause_ratio:
+    mean=0.2635, std=0.0556
+    range=[0.1410, 0.4047]
+  speech_ratio:
+    mean=0.7500, std=0.0527
+    range=[0.6201, 0.8634]
+  pause_speech_ratio:
+    mean=0.9993, std=0.0419
+    range=[0.8000, 1.1429]
+  num_pauses_per_sec:
+    mean=0.4589, std=0.1475
+    range=[0.1504, 0.9792]
+  num_speech_segments_per_sec:
+    mean=0.4583, std=0.1471
+    range=[0.1688, 0.9634]
+  speech_dur_mean:
+    mean=1.8383, std=0.7058
+    range=[0.6482, 5.1017]
+  speech_dur_std:
+    mean=2.1466, std=1.1507
+    range=[0.6717, 10.6264]
+  speech_dur_skew:
+    mean=1.9371, std=1.0083
+    range=[-0.0727, 9.7134]
+  speech_dur_kurt:
+    mean=4.5720, std=6.6105
+    range=[-1.6307, 98.7090]
+  ... and 27 more features

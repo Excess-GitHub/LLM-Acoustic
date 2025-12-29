@@ -1,0 +1,180 @@
+# AD Detection Configuration
+# Based on: "Integrating Fine-Tuned LLM with Acoustic Features for Enhanced Detection of AD"
+
+# Data paths
+paths:
+  pitt_corpus_root: "../Pitt Corpus/Pitt Corpus"
+  custom_audio_features: "../audio_feature_extraction/output/pitt_audio_features.csv"
+  output_dir: "./output"
+  cache_dir: "./cache"
+  checkpoints_dir: "./checkpoints"
+
+# Dataset configuration
+dataset:
+  train_split: 0.8
+  val_split: 0.2
+  random_seed: 42
+  n_folds: 1  # Set to 1 for single train/test split
+
+# Cookie Theft picture description (from Boston Diagnostic Aphasia Examination)
+picture_description: >
+  a kitchen scene where a woman is washing dishes at a sink. The water is
+  overflowing from the sink onto the floor. Behind her, two children (a boy
+  and a girl) are attempting to steal cookies from a cookie jar on a high
+  shelf. The boy is standing on a stool that is tipping over. The girl is
+  reaching up to receive a cookie from the boy. Through the window, you can
+  see the backyard with a path.
+
+# Whisper ASR configuration
+whisper:
+  model_size: "base"  # Options: tiny, base, small, medium, large-v3
+  language: "en"
+  task: "transcribe"
+
+# LLM configuration (Mistral-7B is the best from the paper)
+llm:
+  model_name: "mistralai/Mistral-7B-v0.1"
+  # Alternative models from the paper:
+  # - "meta-llama/Llama-2-7b-hf"
+  # - "meta-llama/Llama-2-13b-hf"
+  # - "teknium/OpenHermes-2.5-Mistral-7B"
+  
+  max_length: 2048
+  load_in_8bit: false  # For normal GPU
+  load_in_4bit: true   # For small GPU (1660 Ti)
+  
+  # LoRA hyperparameters (optimized from paper Table II for Mistral)
+  lora:
+    r: 20
+    alpha: 40
+    dropout: 0.01
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    bias: "none"
+    task_type: "CAUSAL_LM"
+
+# Training configuration
+training:
+  # LoRA fine-tuning
+  epochs: 5
+  batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  optimizer: "paged_adamw_8bit"  # Memory efficient
+  
+  # Early stopping
+  patience: 10
+  delta: 0.001
+  
+  # Device
+  device: "cuda"
+  fp16: true
+  bf16: false
+
+# Small GPU configuration (4GB VRAM - e.g., GTX 1650, 1660 Ti)
+small_gpu:
+  # Use smaller model for 4GB VRAM
+  model_name: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+  # Alternative small models:
+  # - "microsoft/phi-2"  # 2.7B - needs ~5GB with 4-bit
+  # - "facebook/opt-1.3b"
+  # - "EleutherAI/pythia-1b"
+  # - "distilgpt2"  # Very small, ~350MB
+  
+  load_in_4bit: true
+  load_in_8bit: false
+  batch_size: 1
+  gradient_accumulation_steps: 16
+  max_length: 512  # Shorter context for memory
+  gradient_checkpointing: true
+  
+  # Smaller LoRA for memory efficiency
+  lora:
+    r: 8
+    alpha: 16
+    dropout: 0.05
+    target_modules: ["q_proj", "v_proj"]  # Only attention projections
+    bias: "none"
+
+# VGGish audio feature extraction
+vggish:
+  sample_rate: 16000
+  window_length: 0.96  # seconds (VGGish uses 0.96s windows)
+  hop_length: 0.48     # seconds (50% overlap)
+  embedding_dim: 128   # VGGish output dimension
+
+# GRU Autoencoder for VGGish features (from paper Section III-C)
+gru_autoencoder:
+  hidden_dim: 64       # GRU hidden state dimension (acoustic feature vector size)
+  num_layers: 1
+  dropout: 0.1
+  bidirectional: false
+  
+  # Training
+  epochs: 50
+  batch_size: 16
+  learning_rate: 0.001
+  reconstruction_weight: 0.5  # Balance between reconstruction and classification loss
+
+# Feature fusion and selection (from paper Section III-D)
+feature_selection:
+  method: "linear_svc_l1"  # LinearSVC with L1 penalty
+  importance_threshold: 0.95  # Keep features accounting for 95% importance
+  normalize: true  # Standardize features before fusion
+
+# Classifier configuration (SVC is best from paper)
+classifier:
+  type: "svc"  # Options: svc, lr, rf, gb, xgb, ann, stacking
+  
+  # SVC hyperparameters
+  svc:
+    kernel: "rbf"
+    C: 1.0
+    gamma: "scale"
+    probability: true
+  
+  # Alternative classifiers
+  lr:
+    max_iter: 1000
+    C: 1.0
+    penalty: "l2"
+  
+  rf:
+    n_estimators: 100
+    max_depth: null
+    random_state: 42
+  
+  gb:
+    n_estimators: 50
+    learning_rate: 0.1
+  
+  xgb:
+    n_estimators: 10
+    eval_metric: "logloss"
+
+# Hyperparameter optimization with Optuna
+optuna:
+  n_trials: 50
+  timeout: null
+  study_name: "ad_detection"
+  
+  # Search space
+  lora_alpha: [16, 32, 40, 48, 60, 64]
+  lora_r: [8, 16, 20, 32, 48, 64]
+  lora_dropout: [0.01, 0.02, 0.05, 0.1]
+  epochs: [3, 4, 5, 6, 7]
+
+# Evaluation metrics
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1", "roc_auc"]
+  average: "binary"
+  n_repeats: 25  # Repeat with different random states for robust evaluation
+
+# Logging
+logging:
+  level: "INFO"
+  log_to_file: true
+  use_wandb: false
+  use_tensorboard: true
+

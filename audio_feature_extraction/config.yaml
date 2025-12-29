@@ -1,0 +1,92 @@
+# Audio Feature Extraction Configuration for Pitt Corpus
+# Based on cross-linguistic paper implementation
+
+# Dataset paths (relative to project root)
+paths:
+  pitt_corpus_root: "../Pitt Corpus/Pitt Corpus"
+  media_dir: "Media"
+  transcripts_dir: "Transcripts/Pitt"
+  output_dir: "../output"
+  output_csv: "pitt_audio_features.csv"
+
+# Audio preprocessing parameters
+audio:
+  target_sample_rate: 16000  # Hz (resample all audio to this rate)
+  original_sample_rate: 44100  # Hz (typical Pitt Corpus rate)
+  normalize: true
+  remove_dc_offset: true
+
+# VAD (Voice Activity Detection) parameters
+# Based on Timing_VAD.py implementation
+vad:
+  window_size: 0.025  # 25ms windows
+  hop_size: 0.010  # 10ms hop (stride)
+  gaussian_kernel_ms: 10  # Gaussian smoothing kernel size in ms
+  gaussian_std_ratio: 0.05  # std = kernel_length * this ratio
+  threshold_method: "median_negative"  # median of negative energy values
+  min_pause_duration: 0.0  # Minimum pause duration in seconds (0 = no filtering)
+  min_speech_duration: 0.0  # Minimum speech segment duration in seconds
+
+# Prosody (F0 and Intensity) parameters
+prosody:
+  f0_min: 50  # Hz - minimum F0 for analysis
+  f0_max: 500  # Hz - maximum F0 for analysis  
+  f0_method: "pyin"  # Options: "pyin" (librosa), "parselmouth", "yin"
+  frame_length: 2048  # samples (for spectral analysis)
+  hop_length: 512  # samples (50% overlap for 16kHz)
+  voiced_threshold: 0.0  # F0 values > this are considered voiced
+  
+# Voice quality parameters
+voice_quality:
+  # Jitter parameters
+  jitter_max_period_ratio: 1.3  # Maximum ratio between consecutive periods
+  jitter_max_period_diff: 0.02  # Maximum period difference in seconds
+  
+  # Shimmer parameters  
+  shimmer_max_amplitude_factor: 1.6  # Maximum ratio between consecutive amplitudes
+  
+  # HNR parameters
+  hnr_time_step: 0.01  # seconds
+  hnr_min_pitch: 75  # Hz
+  hnr_silence_threshold: 0.1
+
+# Feature computation
+features:
+  compute_vad: true
+  compute_prosody: true
+  compute_voice_quality: true
+  
+  # Statistics to compute for duration features
+  duration_stats: ["mean", "std", "skew", "kurtosis", "min", "max"]
+  
+  # Statistics for prosody features
+  prosody_stats: ["mean", "std", "min", "max", "range"]
+
+# Processing options
+processing:
+  use_multiprocessing: false
+  n_workers: 4
+  skip_on_error: true
+  verbose: true
+  log_level: "INFO"
+
+# Validation thresholds
+validation:
+  min_duration: 1.0  # seconds - minimum audio duration
+  max_duration: 600.0  # seconds - maximum audio duration  
+  min_speech_ratio: 0.05  # Minimum speech ratio (flag if below)
+  max_pause_ratio: 0.95  # Maximum pause ratio (flag if above)
+  f0_min_valid: 50  # Hz
+  f0_max_valid: 500  # Hz
+  intensity_min_valid: -100  # dB
+  intensity_max_valid: 100  # dB
+
+# Participant groups
+groups:
+  dementia: "Dementia"
+  control: "Control"
+  
+# Cookie Theft task only (as specified)
+tasks:
+  - "cookie"
+
